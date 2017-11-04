@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'csv'
+require 'fileutils'
 
 class Name
   attr_reader :last
@@ -52,7 +53,7 @@ class NameDirectory
     matches = matches.sort_by { |n| n.match_score(file_name) }.reverse
 
     if matches.length >= 2
-      puts "#{file_name} matches multiple names: #{matches.map(&:to_s)}"
+      puts "#{file_name} matches multiple names: #{matches.map(&:to_s)}. Using #{matches.first.to_s}"
     end
 
     if matches.length == 1
@@ -175,9 +176,12 @@ module Main
     input_dir_name = './input'
     input_dirs = Dir.glob(File.join(input_dir_name, '*'))
                     .map { |dir_name| InputDir.new(dir_name) }
+    total_files = input_dirs.map { |i_dir| i_dir.num_files }
+                            .inject(0, :+)
 
     puts '== INPUT DIRECTORIES ========== VERIFY THIS'
     puts input_dirs
+    puts "#{total_files} total files"
     puts
 
     output_dir = './output'
@@ -193,7 +197,8 @@ module Main
                             .map { |i_dir| i_dir.file_names }
                             .flatten
                             .map { |f| FileNameChange.new(f) }
-                            .map { |c| FileOperations.strip_id(c) }
+                            .map { |c| FileOperations.strip_id(c) } # strip the "R_"
+                            .map { |c| FileOperations.strip_id(c) } # again to get the rest of the ID
 
     puts '== FILES THAT MATCH MULTIPLE NAMES (MAYBE) ====== VERIFY THIS'
     name_lookup_changes = strip_id_changes
@@ -206,7 +211,7 @@ module Main
                     .select { |before, after| before == after }
                     .map { |before, after| after }
 
-    puts('== NO NAME MATCH FOR ========= ' + (unchanged_files.length ? 'GOOD! NO MANUAL WORK' : 'NEEDS MANUAL WORK'))
+    puts('== NO NAME MATCH FOR ========= ' + (unchanged_files.length ? 'NEEDS MANUAL WORK' : 'GOOD! NO MANUAL WORK'))
     puts(unchanged_files.length ? unchanged_files : 'none - all files matched!')
     puts
 
@@ -230,7 +235,8 @@ module Main
     output_dir_contents = all_changes.map { |c| File.basename(c.new_name) }
 
     puts '== OUTPUT DIR CONTENTS ======== VERIFY THIS'
-    puts(output_dir_contents.length ? output_dir_contents : 'empty')
+    puts output_dir_contents
+    puts "#{output_dir_contents.length} total files"
     puts
 
     collision_output_files = output_dir_contents - output_dir_contents.uniq
@@ -239,7 +245,12 @@ module Main
     puts(collision_output_files.length ? collision_output_files : 'none')
     puts
 
-    # TODO if the flag is set, actually perform this operation
+    puts '== EXECUTING OPERATIONS ========'
+    all_changes.each do |change|
+      puts "cp #{change.old_name} #{change.new_name}"
+      FileUtils.cp(change.old_name, change.new_name)
+    end
+    puts '== DONE ========'
   end
 end
 

@@ -1,4 +1,7 @@
 .idea
+input
+output
+names.csv
 
 *.gem
 *.rbc
