@@ -39,15 +39,11 @@
         -> Statement
           -> 2sdfsdf-blah.doc.pdf
         ...
-   -> names.csv
+     -> names.csv
    ```
 
-## Dry run
+## Run
 1. Open Terminal, go back to your temp directory
 1. `chmod u+x kgun-file-rename/main.rb`
 1. `ruby kgun-file-rename/main.rb`
-
-## Run for real
-1. Open Terminal, go back to your temp directory
-1. `chmod u+x kgun-file-rename/main.rb`
-1. TODO make a way to actually execute this
+1. This outputs a bunch of shit, and copies the files over to their new structure in the `output` folder
